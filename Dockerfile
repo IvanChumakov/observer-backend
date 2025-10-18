@@ -1,12 +1,12 @@
 FROM golang:alpine AS builder
 
-WORKDIR /argus-backend
+WORKDIR /observer-backend
 COPY ./go.mod ./go.sum ./
 RUN go mod download
 
 COPY cmd ./cmd
 COPY internal ./internal
 COPY docs ./docs
-RUN CGO_ENABLED=0 GOOS=linux go build -o argus ./cmd/argus/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o observer ./cmd/observer/main.go
 
-CMD ["./argus"]
+CMD ["./observer"]
