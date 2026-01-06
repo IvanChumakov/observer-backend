@@ -1,0 +1,40 @@
+name: observer
+
+# networks:
+#   observer-network:
+#     driver: bridge
+
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "observer"
+      POSTGRES_USER: "username"
+      POSTGRES_PASSWORD: "1234"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # networks:
+    #   - observer-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # observer:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - observer-network
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
