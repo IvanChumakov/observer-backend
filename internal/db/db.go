@@ -1,13 +1,13 @@
 package db
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
 	"observer/internal/config"
 	"observer/internal/logger"
 	"observer/internal/repository/service"
 	"observer/internal/repository/user"
-	"context"
-	"database/sql"
-	"fmt"
 
 	"go.uber.org/fx"
 
@@ -18,7 +18,7 @@ import (
 )
 
 func InitDb(lc fx.Lifecycle, config *config.Config) *bun.DB {
-	dsn := fmt.Sprintf("postgres://%s:%s@localhost:%d/%s?sslmode=disable",
+	dsn := fmt.Sprintf("postgres://%s:%s@postgres:%d/%s?sslmode=disable",
 		config.PostgresUser, config.PostgresPassword, config.PostgresPort, config.PostgresDb)
 	sqldb, err := sql.Open("pgx", dsn)
 	if err != nil {

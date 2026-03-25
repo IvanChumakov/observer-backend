@@ -1,11 +1,12 @@
 package userservice
 
 import (
+	"fmt"
 	"observer/internal/logger"
 	"observer/internal/repository/user"
-	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"os"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserServiceInterface interface {
@@ -47,6 +48,7 @@ func createJWTToken(user *user.User) (string, error) {
 		"name":  user.Name,
 		"login": user.Login,
 		"id":    user.Id,
+		"email": user.Email,
 	})
 	token, err := claims.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {

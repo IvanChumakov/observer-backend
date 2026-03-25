@@ -1,18 +1,19 @@
 package app
 
 import (
+	"fmt"
 	"observer/internal/logger"
 	"observer/internal/repository/service"
 	clientservice "observer/internal/service/client-service"
 	notificationservice "observer/internal/service/notification-service"
 	servicesinfo "observer/internal/service/services-info"
 	userservice "observer/internal/service/user-service"
-	"fmt"
+	"sync"
+	"time"
+
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"sync"
-	"time"
 )
 
 type App struct {
@@ -41,7 +42,7 @@ func NewApp(infoService servicesinfo.ServicesInfoInterface,
 	}
 }
 
-func (a *App) HealthCheckTask(service *service.Service, userLogin string) {
+func (a *App) HealthCheckTask(service *service.Service, userLogin string, email string) {
 	logger.Info(fmt.Sprintf("Health check task for service %s started", service.Name))
 
 	statusCode, err := a.clientService.SendRequest(service.Address, service.Port)
@@ -63,7 +64,7 @@ func (a *App) HealthCheckTask(service *service.Service, userLogin string) {
 	logger.Info("Preparing to send email notification")
 	err = a.notificationService.SendEmailNotification(fmt.Sprintf("Результат healthcheck: %d для сервиса %s",
 		statusCode,
-		service.Name))
+		service.Name), email)
 	if err != nil {
 		logger.Error("Error sending email notification: " + err.Error())
 	}
@@ -77,11 +78,11 @@ func InvokeScheduler(s *App) {
 	}()
 }
 
-func (a *App) StartNewJob(service *service.Service, duration time.Duration, userId string) (uuid.UUID, error) {
+func (a *App) StartNewJob(service *service.Service, duration time.Duration, userId string, email string) (uuid.UUID, error) {
 	job, err := (*a.scheduler).NewJob(
 		gocron.DurationJob(duration),
 		gocron.NewTask(
-			a.HealthCheckTask, service, userId,
+			a.HealthCheckTask, service, userId, email,
 		))
 	if err != nil {
 		logger.Error("error starting cron job: " + err.Error())

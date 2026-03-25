@@ -1,18 +1,19 @@
 package app
 
 import (
+	"errors"
+	"fmt"
+	"net/http"
 	"observer/internal/logger"
 	"observer/internal/middleware"
 	"observer/internal/repository/schedule"
 	"observer/internal/repository/service"
 	"observer/internal/repository/user"
-	"errors"
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -149,6 +150,12 @@ func (a *App) HealthCheck(c *gin.Context) {
 		return
 	}
 
+	email, ok := c.Get("email")
+	if !ok {
+		c.JSON(400, gin.H{"error": "error getting email"})
+		return
+	}
+
 	userIdCasted := strconv.Itoa(userId.(int))
 	serviceById, err := a.infoService.GetServiceById(id)
 	if err != nil {
@@ -174,7 +181,7 @@ func (a *App) HealthCheck(c *gin.Context) {
 
 	err = a.notificationService.SendEmailNotification(fmt.Sprintf("Результат healthcheck: %d для сервиса %s",
 		statusCode,
-		serviceById.Name))
+		serviceById.Name), email.(string))
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, errors.New("error sending email notification"))
 		return
@@ -275,6 +282,12 @@ func (a *App) HandleSchedule(c *gin.Context) {
 	}
 	userIdCasted := strconv.Itoa(userId.(int))
 
+	email, ok := c.Get("email")
+	if !ok {
+		c.JSON(400, gin.H{"error": "error getting email"})
+		return
+	}
+
 	id, _ := strconv.Atoi(c.Param("id"))
 	serviceById, err := a.infoService.GetServiceById(id)
 	if err != nil {
@@ -288,7 +301,7 @@ func (a *App) HandleSchedule(c *gin.Context) {
 		return
 	}
 
-	jobID, err := a.StartNewJob(serviceById, parsedSchedule, userIdCasted)
+	jobID, err := a.StartNewJob(serviceById, parsedSchedule, userIdCasted, email.(string))
 	if err != nil {
 		c.JSON(500, gin.H{"error": "error starting jo"})
 		return

@@ -1,8 +1,8 @@
 name: observer
 
-# networks:
-#   observer-network:
-#     driver: bridge
+networks:
+  observer-network:
+    driver: bridge
 
 volumes:
   postgres_data:
@@ -17,8 +17,8 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # networks:
-    #   - observer-network
+    networks:
+      - observer-network
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -27,14 +27,14 @@ services:
     ports:
       - "5432:5432"
 
-  # observer:
-  #   build:
-  #     context: .
-  #     dockerfile: ./Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - observer-network
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
+  observer:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - observer-network
+    depends_on:
+      postgres:
+        condition: service_healthy

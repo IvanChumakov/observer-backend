@@ -1,16 +1,17 @@
 package middleware
 
 import (
-	"observer/internal/logger"
 	"fmt"
+	"net/http"
+	"observer/internal/logger"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"net/http"
-	"os"
 )
 
 func EnableCORS(c *gin.Context) {
-	c.Header("Access-Control-Allow-Origin", "https://argus.appweb.space")
+	c.Header("Access-Control-Allow-Origin", "https://24observer.ru")
 	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
 	c.Header("Access-Control-Allow-Credentials", "true")
@@ -27,6 +28,7 @@ type Claims struct {
 	Login string `json:"login"`
 	Name  string `json:"name"`
 	Id    int    `json:"id"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -58,6 +60,7 @@ func JWTTokenVerify(c *gin.Context) {
 	c.Set("login", claims.Login)
 	c.Set("name", claims.Name)
 	c.Set("id", claims.Id)
+	c.Set("email", claims.Email)
 
 	c.Next()
 }

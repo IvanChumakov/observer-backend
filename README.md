@@ -1,1 +1,1 @@
-# argus-backend
+# Observer backend
